@@ -43,9 +43,17 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
     #   Choose optmizer
 
     if params['sgld'] == True:
-        optimizer = SGLD(model.parameters(), lr=params['init_lr'], norm_sigma=params['weight_decay'], addnoise=True, noise_std=params['sgld_noise_std'])
+        optimizer = SGLD(model.parameters(),
+                        lr=params['init_lr'], 
+                        norm_sigma=params['weight_decay'], 
+                        addnoise=True, 
+                        noise_std=params['sgld_noise_std'])
     elif params['psgld'] == True:
-        optimizer = pSGLD(model.parameters(), lr=params['init_lr'], norm_sigma=params['weight_decay'], addnoise=True, noise_std=params['sgld_noise_std'])
+        optimizer = pSGLD(model.parameters(), 
+                        lr=params['init_lr'], 
+                        norm_sigma=params['weight_decay'], 
+                        addnoise=True, 
+                        noise_std=params['sgld_noise_std'])
     print('Optimizer:')
     print(optimizer)
 
@@ -74,15 +82,23 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
                 start = time.time()
 
-                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params)
-                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = evaluate_network_classification(model, None, device, val_loader, epoch, params)
+                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = \
+                    train_epoch_classification(model, optimizer, device, train_loader, epoch, params)
+                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = \
+                    evaluate_network_classification(model, None, device, val_loader, epoch, params)
+                _, epoch_test_perf, test_scores, test_targets, test_smiles = \
+                    evaluate_network_classification(model, None, device, test_loader, epoch, params)        
 
-                _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, None, device, test_loader, epoch, params)        
-
-                t.set_postfix(time=time.time()-start, lr=optimizer.param_groups[0]['lr'],
-                              train_loss=epoch_train_loss, val_loss=epoch_val_perf['auroc'],
-                              train_AUC=epoch_train_perf['auroc'], val_AUC=epoch_val_perf['auroc'], test_AUC=epoch_test_perf['auroc'], 
-                              train_ECE=epoch_train_perf['ece'], val_ECE=epoch_val_perf['ece'], test_ECE=epoch_test_perf['ece'])
+                t.set_postfix(time=time.time()-start, 
+                            lr=optimizer.param_groups[0]['lr'],
+                            train_loss=epoch_train_loss, 
+                            val_loss=epoch_val_perf['auroc'],
+                            train_AUC=epoch_train_perf['auroc'], 
+                            val_AUC=epoch_val_perf['auroc'], 
+                            test_AUC=epoch_test_perf['auroc'], 
+                            train_ECE=epoch_train_perf['ece'], 
+                            val_ECE=epoch_val_perf['ece'], 
+                            test_ECE=epoch_test_perf['ece'])
                             
                 per_epoch_time.append(time.time()-start)
 
@@ -121,8 +137,10 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
         torch.save(model.state_dict(), '{}.pkl'.format(ckpt_dir  
             + '/seed_' +str(params['seed']) + '_dtseed_' + str(params['data_seed'])+ "_epoch_"+ str(epoch)))
 
-    test_loss, test_perf, test_scores, test_targets, test_smiles= evaluate_network_classification(model, optimizer, device, test_loader, epoch, params)
-    train_loss, train_perf, train_scores, train_targets, train_smiles  = evaluate_network_classification(model, optimizer, device, train_loader, epoch, params)
+    test_loss, test_perf, test_scores, test_targets, test_smiles = \
+        evaluate_network_classification(model, optimizer, device, test_loader, epoch, params)
+    train_loss, train_perf, train_scores, train_targets, train_smiles = \
+        evaluate_network_classification(model, optimizer, device, train_loader, epoch, params)
 
     #   additional metrics for tox21: accuracy, auc, precision, recall, f1, + ECE
 

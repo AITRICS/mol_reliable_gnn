@@ -451,7 +451,7 @@ def add_dir_name(dirs, MODEL_NAME, config, params, net_params):
             file_name += '_psgld'
         elif params['swa'] == True:
             file_name += '_swa'
-        elif parmas['swag'] == True:
+        elif params['swag'] == True:
             file_name += '_swag'
         elif params['mcdropout'] == True:
             file_name += '_mcdropout'

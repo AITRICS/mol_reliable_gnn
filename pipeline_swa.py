@@ -16,7 +16,6 @@ from nets.molecules_graph_regression.load_net import gnn_model # import all GNNS
 from train.train_molecules_graph_classification import train_epoch_classification, evaluate_network_classification # import train functions
 from train.metrics import binary_class_perfs
 
-from utils import save_checkpoint, add_dir_name
 import swa_utils
 
 def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config, params, net_params, dirs):
@@ -29,7 +28,7 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
             dataset._add_self_loops()
         
     trainset, valset, testset = dataset.train, dataset.val, dataset.test
-    root_log_dir, root_ckpt_dir, write_file_name, write_config_file, root_output_dir = dirs
+    root_ckpt_dir, write_file_name, root_output_dir = dirs
         
     device = net_params['device']
     
@@ -70,7 +69,10 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
                 if (epoch >= params['swa_start']) :
                     if (params['swa_lr_alpha1'] != params['swa_lr_alpha2']):
                         #   Using cyclic learning rate for SWA
-                        cyclic_schedule = swa_utils.cyclic_learning_rate(epoch, params['swa_c_epochs'], params['swa_lr_alpha1'], params['swa_lr_alpha2'])
+                        cyclic_schedule = swa_utils.cyclic_learning_rate(epoch, 
+                                            params['swa_c_epochs'], 
+                                            params['swa_lr_alpha1'], 
+                                            params['swa_lr_alpha2'])
                     else:
                         #   Using fixed learning rate for SWA
                         cyclic_schedule = None
@@ -86,9 +88,12 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
                 start = time.time()
 
-                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
-                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = evaluate_network_classification(model, device, val_loader, epoch, params)
-                _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, device, test_loader, epoch, params)        
+                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = \
+                    train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
+                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = \
+                    evaluate_network_classification(model, device, val_loader, epoch, params)
+                _, epoch_test_perf, test_scores, test_targets, test_smiles = \
+                    evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 #   SWA update of parameters
                 if epoch > params['swa_start'] and (epoch - (params['swa_start']))%params['swa_c_epochs'] == 0:
@@ -96,10 +101,16 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
                     swa_n += 1
 
 
-                t.set_postfix(time=time.time()-start, lr=optimizer.param_groups[0]['lr'],
-                              train_loss=epoch_train_loss, val_loss=epoch_val_perf['auroc'],
-                              train_AUC=epoch_train_perf['auroc'], val_AUC=epoch_val_perf['auroc'], test_AUC=epoch_test_perf['auroc'], 
-                              train_ECE=epoch_train_perf['ece'], val_ECE=epoch_val_perf['ece'], test_ECE=epoch_test_perf['ece'])
+                t.set_postfix(time=time.time()-start, 
+                            lr=optimizer.param_groups[0]['lr'],
+                            train_loss=epoch_train_loss, 
+                            val_loss=epoch_val_perf['auroc'],
+                            train_AUC=epoch_train_perf['auroc'], 
+                            val_AUC=epoch_val_perf['auroc'], 
+                            test_AUC=epoch_test_perf['auroc'], 
+                            train_ECE=epoch_train_perf['ece'], 
+                            val_ECE=epoch_val_perf['ece'], 
+                            test_ECE=epoch_test_perf['ece'])
                             
                 per_epoch_time.append(time.time()-start)
 
@@ -125,8 +136,10 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
             optimizer=optimizer.state_dict()
         )
     
-    test_loss, test_perf, test_scores, test_targets, test_smiles= evaluate_network_classification(swa_model, device, test_loader, epoch, params)
-    train_loss, train_perf, train_scores, train_targets, train_smiles  = evaluate_network_classification(swa_model, device, train_loader, epoch, params)
+    test_loss, test_perf, test_scores, test_targets, test_smiles = \
+        evaluate_network_classification(swa_model, device, test_loader, epoch, params)
+    train_loss, train_perf, train_scores, train_targets, train_smiles = \
+        evaluate_network_classification(swa_model, device, train_loader, epoch, params)
 
     #   additional metrics for tox21: accuracy, auc, precision, recall, f1, + ECE
 

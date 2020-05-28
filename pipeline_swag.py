@@ -79,7 +79,10 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
                 if (epoch >= params['swa_start']) :
                     if (params['swa_lr_alpha1'] != params['swa_lr_alpha2']):
                         #   Using cyclic learning rate for SWA
-                        cyclic_schedule = swa_utils.cyclic_learning_rate(epoch, params['swa_c_epochs'], params['swa_lr_alpha1'], params['swa_lr_alpha2'])
+                        cyclic_schedule = swa_utils.cyclic_learning_rate(epoch, 
+                                                params['swa_c_epochs'], 
+                                                params['swa_lr_alpha1'], 
+                                                params['swa_lr_alpha2'])
                     else:
                         #   Using fixed learning rate for SWA
                         cyclic_schedule = None
@@ -95,15 +98,18 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
                 start = time.time()
 
-                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
-                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = evaluate_network_classification(model, device, val_loader, epoch, params)
+                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = \
+                    train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
+                epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = \
+                    evaluate_network_classification(model, device, val_loader, epoch, params)
+                _, epoch_test_perf, test_scores, test_targets, test_smiles = \
+                    evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 #   SWA update of parameters
                 if epoch > params['swa_start'] and (epoch - (params['swa_start']))%params['swa_c_epochs'] == 0:
                     swag_model.collect_model(model)
                     swa_n += 1
 
-                _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 t.set_postfix(time=time.time()-start, lr=optimizer.param_groups[0]['lr'],
                               train_loss=epoch_train_loss, val_loss=epoch_val_perf['auroc'],
@@ -144,8 +150,10 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
     for i in range(num_samples):
         swag_model.sample(scale, cov=True) 
-        test_loss, test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(swag_model, device, test_loader, epoch, params)
-        train_loss, train_perf, train_scores, train_targets, train_smiles  = evaluate_network_classification(swag_model, device, train_loader, epoch, params)
+        test_loss, test_perf, test_scores, test_targets, test_smiles = \
+            evaluate_network_classification(swag_model, device, test_loader, epoch, params)
+        train_loss, train_perf, train_scores, train_targets, train_smiles = \
+            evaluate_network_classification(swag_model, device, train_loader, epoch, params)
 
         test_scores_list.append(test_scores.detach().cpu().numpy())
         train_scores_list.append(train_scores.detach().cpu().numpy())

@@ -16,6 +16,7 @@ scripts/
 
 #Pretrain dataset path
 data/dataset/*
+data/datasets/*
 data/nips2020/*
 
 #common

@@ -29,7 +29,7 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
             dataset._add_self_loops()
     
     trainset, valset, testset = dataset.train, dataset.val, dataset.test
-    root_log_dir, root_ckpt_dir, write_file_name, write_config_file, root_output_dir = dirs
+    root_ckpt_dir, write_file_name, root_output_dir = dirs
         
     device = net_params['device']
     

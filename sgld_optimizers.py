@@ -25,6 +25,8 @@ class SGLD(Optimizer):
 
         super(SGLD, self).__init__(params, defaults)
 
+        self.noise_std = noise_std
+
     def step(self):
         """
         Performs a single optimization step.
@@ -43,8 +45,9 @@ class SGLD(Optimizer):
                     d_p.add_(weight_decay, p.data)
 
                 if group['addnoise']:
-
-                    langevin_noise = p.data.new(p.data.size()).normal_(mean=0, std=noise_std) / np.sqrt(group['lr'])
+                    
+                    
+                    langevin_noise = p.data.new(p.data.size()).normal_(mean=0, std=self.noise_std) / np.sqrt(group['lr'])
                     p.data.add_(-group['lr'],
                                 0.5 * d_p + langevin_noise)
                 else:

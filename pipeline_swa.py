@@ -88,13 +88,13 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
                 epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
                 epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = evaluate_network_classification(model, device, val_loader, epoch, params)
+                _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 #   SWA update of parameters
                 if epoch > params['swa_start'] and (epoch - (params['swa_start']))%params['swa_c_epochs'] == 0:
                     swa_utils.moving_average(swa_model, model, 1.0/(swa_n + 1))
                     swa_n += 1
 
-                _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 t.set_postfix(time=time.time()-start, lr=optimizer.param_groups[0]['lr'],
                               train_loss=epoch_train_loss, val_loss=epoch_val_perf['auroc'],

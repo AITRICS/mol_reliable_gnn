@@ -23,21 +23,6 @@ def gpu_setup(use_gpu, gpu_id):
 
     return device
 
-def save_checkpoint(root_ckpt_dir, model, params, epoch):
-
-    ckpt_dir = os.path.join(root_ckpt_dir, "RUN_")
-    if not os.path.exists(ckpt_dir):
-        os.makedirs(ckpt_dir)
-    torch.save(model.state_dict(), '{}.pkl'.format(ckpt_dir  
-        + '/seed_' +str(params['seed']) + '_dtseed_' + str(params['data_seed'])+ "_epoch_"+ str(epoch)))
-
-    files = glob.glob(ckpt_dir + '/*.pkl')
-    for file in files:
-        epoch_nb = file.split('_')[-1]
-        epoch_nb = int(epoch_nb.split('.')[0])
-        if epoch_nb < epoch-1:
-            os.remove(file)
-
 def get_arguments():
     
     parser = argparse.ArgumentParser()
@@ -103,12 +88,6 @@ def get_arguments():
     parser.add_argument('--neighbor_aggr_GIN', help="Please give a value for neighbor_aggr_GIN")
     #   Additional arguments for GatedGCN
     parser.add_argument('--gated_gcn_agg', help="Please give a value for agg in gcn")
-
-
-
-    #   additional arguments for regression
-
-    #   additional arguments for classification
 
     #   additional arguments for pretraining
     
@@ -319,8 +298,6 @@ def get_configs(args):
         params['swag_eval_scale'] = float(args.swag_eval_scale)
         params['swag_eval_num_samples'] = int(args.swag_eval_num_samples)
 
-
-
     #   SGLD config
     params['sgld'] = False
     if args.sgld:
@@ -431,15 +408,11 @@ def get_configs(args):
 
     return args, config, params, net_params
 
-    
-# Clean the main.py file after conversion from notebook.
-# Any notebook code is removed from the main.py file.
-
 def add_dir_name(dirs, MODEL_NAME, config, params, net_params):
     
     out_dir = config['out_dir']
 
-    root_log_dir, root_ckpt_dir, write_file_name, write_config_file, root_output_dir = dirs
+    root_ckpt_dir, write_file_name, root_output_dir = dirs
     """
         Write the results in out_dir/results folder
     """
@@ -470,18 +443,26 @@ def add_dir_name(dirs, MODEL_NAME, config, params, net_params):
             file_name += ('_'+str(params['weight_decay']))
 
         #   Bayesian Method stated
-
+        if params['bbp'] == True:
+            file_name += '_bbp'
+        elif params['sgld'] == True:
+            file_name += '_sgld'
+        elif params['psgld'] == True:
+            file_name += '_psgld'
+        elif params['swa'] == True:
+            file_name += '_swa'
+        elif parmas['swag'] == True:
+            file_name += '_swag'
+        elif params['mcdropout'] == True:
+            file_name += '_mcdropout'
+        
         new_dirs.append(file_name)
 
-
-    dirs = new_dirs[0], new_dirs[1], new_dirs[2], new_dirs[3], new_dirs[4]
+    dirs = new_dirs[0], new_dirs[1], new_dirs[2]
 
     if not os.path.exists(out_dir + 'results'):
         os.makedirs(out_dir + 'results')
         
-    if not os.path.exists(out_dir + 'configs'):
-        os.makedirs(out_dir + 'configs')
-
     if not os.path.exists(out_dir + 'checkpoints'):
         os.makedirs(out_dir + 'checkpoints')
         

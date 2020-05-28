@@ -1,3 +1,4 @@
+
 import numpy as np
 import os
 import time
@@ -12,12 +13,11 @@ from torch.utils.data import DataLoader
 
 from tqdm import tqdm
 
-from nets.molecules_graph_regression.load_net import gnn_model # import all GNNS
-from train.train_molecules_graph_classification import train_epoch_classification, evaluate_network_classification # import train functions
+from nets.molecules_graph_regression.load_bbp_net import gnn_model # import all BBP GNNS
+from train.train_molecules_graph_classification_bbp import train_epoch_classification, evaluate_network_classification # import train functions
 from train.metrics import binary_class_perfs
 
-import swa_utils
-from swag import SWAG
+# from nets.molecules_graph_regression.gin_bbp_net import GINNet
 
 def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config, params, net_params, dirs):
     t0 = time.time()
@@ -47,62 +47,35 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
         optimizer = optim.SGD(model.parameters(), lr=params['init_lr'], weight_decay=params['weight_decay'])
     else:
         raise NameError('No optimizer given')
-    print("optimizer: " + str(params['optimizer']))
+    print('Optimizer:')
+    print(optimizer)
 
-    #   second model called swa_model in order to move-average parame
-    if params['swag'] is True:
-        swag_model = SWAG(
-                gnn_model(MODEL_NAME, net_params),
-                no_cov_mat=False,
-                max_num_models=30
-                )
-
-        swag_model = swag_model.to(device)
-        swa_n = 0
-        start_epoch = 0
+    if params['scheduler'] == 'step':
+        scheduler = optim.lr_scheduler.StepLR(optimizer, 
+                                            step_size=params['step_size'], 
+                                            gamma=params['lr_reduce_factor'])
+    else:
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                         factor=params['lr_reduce_factor'],
+                                                         patience=params['lr_schedule_patience'],
+                                                         verbose=True)
 
     train_loader = DataLoader(trainset, batch_size=params['batch_size'], shuffle=True, collate_fn=dataset.collate)
     val_loader = DataLoader(valset, batch_size=params['batch_size'], shuffle=False, collate_fn=dataset.collate)
     test_loader = DataLoader(testset, batch_size=params['batch_size'], shuffle=False, collate_fn=dataset.collate)
+        
     
     # At any point you can hit Ctrl + C to break out of training early.
-    if params['swag'] is True:
-        swa_n = 0
-        start_epoch = 0
-
     try:
         with tqdm(range(params['epochs'])) as t:
             for epoch in t:
-                epoch += 1
-
-                #   SWA LR adjustin
-                if (epoch >= params['swa_start']) :
-                    if (params['swa_lr_alpha1'] != params['swa_lr_alpha2']):
-                        #   Using cyclic learning rate for SWA
-                        cyclic_schedule = swa_utils.cyclic_learning_rate(epoch, params['swa_c_epochs'], params['swa_lr_alpha1'], params['swa_lr_alpha2'])
-                    else:
-                        #   Using fixed learning rate for SWA
-                        cyclic_schedule = None
-                        lr = params['swa_lr_alpha1']
-                        swa_utils.adjust_learning_rate(optimizer, lr)
-
-                else:
-                    cyclic_schedule = None
-                    lr = swa_utils.schedule(epoch, params)
-                    swa_utils.adjust_learning_rate(optimizer, lr)
 
                 t.set_description('Epoch %d' % epoch)
 
                 start = time.time()
 
-                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params, cyclic_schedule)
+                epoch_train_loss, epoch_train_perf, optimizer, train_scores, train_targets = train_epoch_classification(model, optimizer, device, train_loader, epoch, params)
                 epoch_val_loss, epoch_val_perf, val_scores, val_targets, val_smiles = evaluate_network_classification(model, device, val_loader, epoch, params)
-
-                #   SWA update of parameters
-                if epoch > params['swa_start'] and (epoch - (params['swa_start']))%params['swa_c_epochs'] == 0:
-                    swag_model.collect_model(model)
-                    swa_n += 1
-
                 _, epoch_test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(model, device, test_loader, epoch, params)        
 
                 t.set_postfix(time=time.time()-start, lr=optimizer.param_groups[0]['lr'],
@@ -112,6 +85,17 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
                             
                 per_epoch_time.append(time.time()-start)
 
+
+                if params['scheduler'] == 'step':
+                    scheduler.step()
+                else:
+                    scheduler.step(epoch_val_loss)
+
+                if params['scheduler'] != 'step':
+                    if optimizer.param_groups[0]['lr'] < params['min_lr']:
+                        print("\n!! LR EQUAL TO MIN LR SET.")
+                        break
+                
                 # Stop training after params['max_time'] hours
                 if time.time()-t0 > params['max_time']*3600:
                     print('-' * 89)
@@ -122,39 +106,16 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
         print('-' * 89)
         print('Exiting from training early because of KeyboardInterrupt')
     
+    # Saving checkpoint
     if config['save_params'] is True:
-        swa_utils.save_checkpoint(
-            root_ckpt_dir,
-            epoch,
-            params,
-            state_dict=model.state_dict(),
-            swa_state_dict=swag_model.state_dict(),
-            swa_n=swa_n,
-            optimizer=optimizer.state_dict()
-        )
+        ckpt_dir = os.path.join(root_ckpt_dir, "RUN_")
+        if not os.path.exists(ckpt_dir):
+            os.makedirs(ckpt_dir)
+        torch.save(model.state_dict(), '{}.pkl'.format(ckpt_dir  
+            + '/seed_' +str(params['seed']) + '_dtseed_' + str(params['data_seed'])+ "_epoch_"+ str(epoch)))
 
-    #   SWAG prediction with 30 samples of models
-    test_scores_list = []
-    test_targets = []
-    train_scores_list = []
-    train_targets = []
-
-    scale = params['swag_eval_scale']
-    num_samples = params['swag_eval_num_samples']
-
-    for i in range(num_samples):
-        swag_model.sample(scale, cov=True) 
-        test_loss, test_perf, test_scores, test_targets, test_smiles = evaluate_network_classification(swag_model, device, test_loader, epoch, params)
-        train_loss, train_perf, train_scores, train_targets, train_smiles  = evaluate_network_classification(swag_model, device, train_loader, epoch, params)
-
-        test_scores_list.append(test_scores.detach().cpu().numpy())
-        train_scores_list.append(train_scores.detach().cpu().numpy())
-
-    test_scores = np.mean(test_scores_list, axis=0)
-    train_scores = np.mean(train_scores_list, axis=0)
-
-    test_perfs = binary_class_perfs(test_scores, test_targets.detach().cpu().numpy())
-    train_perfs = binary_class_perfs(train_scores, train_targets.detach().cpu().numpy())
+    test_loss, test_perf, test_scores, test_targets, test_smiles= evaluate_network_classification(model, device, test_loader, epoch, params, Nsamples=int(params['bbp_eval_Nsample']))
+    train_loss, train_perf, train_scores, train_targets, train_smiles  = evaluate_network_classification(model, device, train_loader, epoch, params, Nsamples=int(params['bbp_eval_Nsample']))
 
     #   additional metrics for tox21: accuracy, auc, precision, recall, f1, + ECE
 
@@ -190,13 +151,13 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
 
     predictions = {}
     predictions['train_smiles'] = train_smiles
-    predictions['train_scores'] = train_scores
+    predictions['train_scores'] = train_scores.detach().cpu().numpy()
     predictions['train_targets'] = train_targets.detach().cpu().numpy()
     predictions['val_smiles'] = val_smiles
-    predictions['val_scores'] = val_scores
+    predictions['val_scores'] = val_scores.detach().cpu().numpy()
     predictions['val_targets'] = val_targets.detach().cpu().numpy()
     predictions['test_smiles'] = test_smiles
-    predictions['test_scores'] = test_scores
+    predictions['test_scores'] = test_scores.detach().cpu().numpy()
     predictions['test_targets'] = test_targets.detach().cpu().numpy()
     with open('{}.pkl'.format(root_output_dir+ '_seed_' +str(params['seed'])
                 + '_dtseed_' +str(params['data_seed'])), 'wb') as f:

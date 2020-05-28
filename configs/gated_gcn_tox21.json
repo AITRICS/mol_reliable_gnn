@@ -1,0 +1,46 @@
+{
+    "gpu": {
+        "use": false,
+        "id": 0
+    },
+    
+    "model": "GatedGCN",
+    "dataset": "TOX21",
+    "data_seed": 222,
+    "num_train": 1200,
+    "num_val": 150,
+    "num_test": 150,
+    "atom_meta": true,
+    
+    "out_dir": "out/tox21_classification/",
+    
+    "params": {
+        "task": "classification",
+        "seed": 41,
+        "epochs": 200,
+        "batch_size": 128,
+        "scheduler": "step",
+        "init_lr": 0.001,
+        "lr_reduce_factor": 0.1,
+        "lr_schedule_patience": 5,
+        "min_lr": 1e-5,
+        "weight_decay": 0.0,
+        "print_epoch_interval": 5,
+        "max_time": 48
+    },
+    
+    "net_params": {
+        "L": 4,
+        "hidden_dim": 128,
+        "out_dim": 256,
+        "residual": true,
+        "edge_feat": true,
+        "readout": "sum",
+        "in_feat_dropout": 0.0,
+        "dropout": 0.0,
+        "graph_norm": false,
+        "batch_norm": false,
+        "layer_norm": false,
+        "gated_gcn_agg": "sum"
+    }
+}

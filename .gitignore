@@ -1,4 +1,58 @@
+
+*.swp
+*.png
+
+#   re-benchmarking
+
+main_SBMs_*
+main_TUs_*
+main_superpixels_*
+main_TSP_*
+data/molecules/train.pickle
+data/molecules/val.pickle
+data/molecules/test.pickle
+data/molecules/molecules.zip
+scripts/
+
+#Pretrain dataset path
+data/dataset/*
+data/nips2020/*
+
+#common
+**/*.DS_Store
+**/*.ipynb_checkpoints/
+**/__pycache__
+out/
+
+gmail.py
+
+#SBM datasets
+data/SBMs/*.pkl
+
+#Superpixels datasets
+data/superpixels/*.pkl
+data/superpixels/*.zip
+PATH/
+
+#ZINC dataset
+data/molecules/*.pkl
+data/molecules/*.pickle
+data/molecules/*.zip
+
+
+#TSP
+data/TSP/*.txt
+data/TSP/*.pkl
+data/TSP/*.zip
+data/TSP/pyconcorde/
+
+
+=======
+
+
 # Byte-compiled / optimized / DLL files
+
+
 __pycache__/
 *.py[cod]
 *$py.class

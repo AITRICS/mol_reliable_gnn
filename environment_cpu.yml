@@ -1,8 +1,9 @@
-name: benchmark_gnn
+name: reliable_gnn
 channels:
 - pytorch 
 - dglteam
 - conda-forge
+- rdkit
 dependencies:
 - python=3.7.4
 - python-dateutil=2.8.0
@@ -33,3 +34,5 @@ dependencies:
 - scikit-image=0.15.0
 - requests==2.22.0
 - tqdm==4.43.0
+- rdkit
+- gpytorch

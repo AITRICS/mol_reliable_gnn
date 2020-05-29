@@ -1,4 +1,4 @@
-name: benchmark_gnn
+name: reliable_gnn
 channels:
 - pytorch 
 - dglteam

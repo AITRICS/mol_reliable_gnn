@@ -20,6 +20,12 @@ conda activate reliable_gnn
 
 # Download datasets
 
+```
+# At the root of the project
+cd data/ 
+bash script_download_molecules.sh
+```
+
 # Reproducibility
 
 ## 1. Usage

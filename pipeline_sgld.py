@@ -130,11 +130,19 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
         print('Exiting from training early because of KeyboardInterrupt')
     
     # Saving checkpoint
+
+
     if config['save_params'] is True:
         ckpt_dir = os.path.join(root_ckpt_dir, "RUN_")
         if not os.path.exists(ckpt_dir):
             os.makedirs(ckpt_dir)
-        torch.save(model.state_dict(), '{}.pkl'.format(ckpt_dir  
+
+        #   Both model and optimizer should be saved
+        state = {'epoch': epoch + 1,
+                'state_dict': model.state_dict(),
+                'optimizer': optimizer.state_dict()
+                }
+        torch.save(state, '{}.pkl'.format(ckpt_dir  
             + '/seed_' +str(params['seed']) + '_dtseed_' + str(params['data_seed'])+ "_epoch_"+ str(epoch)))
 
     test_loss, test_perf, test_scores, test_targets, test_smiles = \

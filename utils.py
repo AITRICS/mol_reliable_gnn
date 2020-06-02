@@ -50,20 +50,13 @@ def get_arguments():
     parser.add_argument('--residual', help="Please give a value for residual")
     parser.add_argument('--edge_feat', help="Please give a value for edge_feat")
     parser.add_argument('--readout', help="Please give a value for readout")
-    parser.add_argument('--kernel', help="Please give a value for kernel")
     parser.add_argument('--n_heads', help="Please give a value for n_heads")
     parser.add_argument('--gated', help="Please give a value for gated")
     parser.add_argument('--in_feat_dropout', help="Please give a value for in_feat_dropout")
     parser.add_argument('--dropout', help="Please give a value for dropout")
     parser.add_argument('--graph_norm', help="Please give a value for graph_norm")
     parser.add_argument('--batch_norm', help="Please give a value for batch_norm")
-    parser.add_argument('--data_mode', help="Please give a value for data_mode")
-    parser.add_argument('--num_pool', help="Please give a value for num_pool")
-    parser.add_argument('--gnn_per_block', help="Please give a value for gnn_per_block")
     parser.add_argument('--embedding_dim', help="Please give a value for embedding_dim")
-    parser.add_argument('--pool_ratio', help="Please give a value for pool_ratio")
-    parser.add_argument('--linkpred', help="Please give a value for linkpred")
-    parser.add_argument('--cat', help="Please give a value for cat")
     parser.add_argument('--self_loop', help="Please give a value for self_loop")
     parser.add_argument('--max_time', help="Please give a value for max_time")
 
@@ -96,7 +89,7 @@ def get_arguments():
     parser.add_argument('--input_model_file', help="Please give input file name for pretraining")
     parser.add_argument('--output_model_file', help="Please give output file name for pretraining")
 
-    #   additional arguments for SWA training
+    #   additional arguments for mcdropout training
     parser.add_argument('--mcdropout', default=False, help="Please give a bool whether to use MCDropout or not")
     parser.add_argument('--mc_eval_num_samples', default=30, help="Please give an int for the number of samples used in inference")
 
@@ -338,8 +331,6 @@ def get_configs(args):
         net_params['edge_feat'] = True if args.edge_feat=='True' else False
     if args.readout is not None:
         net_params['readout'] = args.readout
-    if args.kernel is not None:
-        net_params['kernel'] = int(args.kernel)
     if args.n_heads is not None:
         net_params['n_heads'] = int(args.n_heads)
     if args.gated is not None:
@@ -354,20 +345,8 @@ def get_configs(args):
         net_params['batch_norm'] = True if args.batch_norm=='True' else False
     if args.layer_norm is not None:
         net_params['layer_norm'] = True if args.layer_norm=='True' else False
-    if args.data_mode is not None:
-        net_params['data_mode'] = args.data_mode
-    if args.num_pool is not None:
-        net_params['num_pool'] = int(args.num_pool)
-    if args.gnn_per_block is not None:
-        net_params['gnn_per_block'] = int(args.gnn_per_block)
     if args.embedding_dim is not None:
         net_params['embedding_dim'] = int(args.embedding_dim)
-    if args.pool_ratio is not None:
-        net_params['pool_ratio'] = float(args.pool_ratio)
-    if args.linkpred is not None:
-        net_params['linkpred'] = True if args.linkpred=='True' else False
-    if args.cat is not None:
-        net_params['cat'] = True if args.cat=='True' else False
     if args.self_loop is not None:
         net_params['self_loop'] = True if args.self_loop=='True' else False
         

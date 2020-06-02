@@ -103,15 +103,5 @@ def main():
         net_params['total_param'] = view_model_param(MODEL_NAME, net_params)
         train_val_pipeline_classification(MODEL_NAME, DATASET_NAME+'_'+dataset.tox_type, dataset, config, params, net_params, dirs)
     
-main()    
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    main()

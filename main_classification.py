@@ -70,9 +70,14 @@ def main():
     elif (params['sgld'] == True) or (params['psgld'] == True):
         from pipeline_sgld import train_val_pipeline_classification
     else:
-        if params['bbp'] == True:
-            from nets.molecules_graph_regression.load_bbp_net import gnn_model # import all GNNS
         from pipeline import train_val_pipeline_classification
+
+    if params['bbp'] == True:
+        from nets.molecules_graph_regression.load_bbp_net import gnn_model # import all GNNS
+    else:
+        from nets.molecules_graph_regression.load_net import gnn_model # import all GNNS
+
+        
 
 
     DATASET_NAME = config['dataset']
@@ -108,5 +113,6 @@ def main():
     net_params['total_param'] = view_model_param(MODEL_NAME, net_params)
     train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config, params, net_params, dirs)
     
-main()    
 
+if __name__ == "__main__":
+    main()

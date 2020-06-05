@@ -74,7 +74,7 @@ class GINLayer(nn.Module):
             self.bn_node_h = nn.BatchNorm1d(out_dim)
         if self.layer_norm:
             self.ln_node_h = nn.LayerNorm(out_dim)
-        
+
     def forward(self, g, h, snorm_n):
 
         g = g.local_var()
@@ -117,7 +117,7 @@ class ApplyNodeFunc(nn.Module):
 
 class MLP(nn.Module):
     """MLP with linear output"""
-    def __init__(self, input_dim, hidden_dim, output_dim, batch_norm, layer_norm):
+    def __init__(self, input_dim, hidden_dim, output_dim, batch_norm, layer_norm, prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
 
         super().__init__()
         self.output_dim = output_dim
@@ -125,14 +125,19 @@ class MLP(nn.Module):
 
         self.batch_norm = batch_norm
         self.layer_norm = layer_norm
+        self.prior_sigma_1 = prior_sigma_1
+        self.prior_sigma_2 = prior_sigma_2
+        self.prior_pi = prior_pi
 
         # Multi-layer model
-        self.linear_1 = BayesianLinear(hidden_dim, hidden_dim, bias=False)
+        self.linear_1 = BayesianLinear(hidden_dim, hidden_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
         if self.batch_norm:
             self.bn = nn.BatchNorm1d((hidden_dim))
         if self.layer_norm:
             self.ln = nn.LayerNorm(hidden_dim)
-        self.linear_2 = BayesianLinear(hidden_dim, hidden_dim, bias=False)
+        self.linear_2 = BayesianLinear(hidden_dim, hidden_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
 
     def forward(self, x):
         h = self.linear_1(x)

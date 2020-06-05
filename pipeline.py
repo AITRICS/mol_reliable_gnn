@@ -22,9 +22,11 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
     if params['bbp'] == True:
         from train.train_molecules_graph_classification_bbp import \
             train_epoch_classification, evaluate_network_classification # import train functions
+        from nets.molecules_graph_regression.load_bbp_net import gnn_model
     else:
         from train.train_molecules_graph_classification import \
             train_epoch_classification, evaluate_network_classification # import train functions
+        from nets.molecules_graph_regression.load_net import gnn_model
 
     t0 = time.time()
     per_epoch_time = []

@@ -194,10 +194,7 @@ class MoleculeDatasetDGL(torch.utils.data.Dataset):
             label_test = label_list[num_train+num_val:]
         else:
             if params['scaffold_split'] == True:
-                if params['pretrain'] == True:
-                    frac = [0.9, 0.1, 0.0]
-                else:
-                    frac = [0.8, 0.1, 0.1]
+                frac = [0.8, 0.1, 0.1]
 
                 smiles_train, smiles_val, smiles_test, label_train, label_val, label_test = \
                     random_scaffold_split(label_list, smiles_list, frac_train=frac[0], frac_valid=frac[1], frac_test=frac[2], seed=params['data_seed'])

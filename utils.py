@@ -65,10 +65,10 @@ def get_arguments():
     parser.add_argument('--scheduler', help="Please give a str value for which scheduler to be used")
     parser.add_argument('--step_size', help="Please give an int value for how much step size to be used for scheduler")
     parser.add_argument('--step_gamma', help="Please give a float value for how much step gamma to be used for scheduler")
-    parser.add_argument('--layer_norm', help="Please give a float value for how much step gamma to be used for scheduler")
+    parser.add_argument('--layer_norm', help="Please give a bool value whether to use layer normalization or not")
 
-    parser.add_argument('--optimizer', default='ADAM', help="Please give a str which optimizer to be used (ADAM / SGD at the moment)")
-    parser.add_argument('--grad_clip', default=0., help="Please give a float indicating how much grad (l2) norm clipped")
+    parser.add_argument('--optimizer', default='ADAM', help="Please give a str which optimizer to be used (ADAM / SGD)")
+    parser.add_argument('--grad_clip', default=0., help="Please give a float indicating how much grad norm clipped")
 
     #   Additional arguments for GCN
     parser.add_argument('--agg', help="Please give a value for agg in gcn")
@@ -82,12 +82,7 @@ def get_arguments():
     #   Additional arguments for GatedGCN
     parser.add_argument('--gated_gcn_agg', help="Please give a value for agg in gcn")
 
-    #   additional arguments for pretraining
-    
     parser.add_argument('--save_params', help="Please give a bool whether to save params or not")
-    parser.add_argument('--pretrain', help="Please give whether task is pretraing or not")
-    parser.add_argument('--input_model_file', help="Please give input file name for pretraining")
-    parser.add_argument('--output_model_file', help="Please give output file name for pretraining")
 
     #   additional arguments for mcdropout training
     parser.add_argument('--mcdropout', default=False, help="Please give a bool whether to use MCDropout or not")
@@ -106,19 +101,22 @@ def get_arguments():
 
     #   additional arguments for SGLD training
 
-    parser.add_argument('--sgld', default=False, help="Please give a bool whether to use SWA or not")
-    parser.add_argument('--psgld', default=False, help="Please give a bool whether to use SWA or not")
-    parser.add_argument('--sgld_noise_std', default=0.001, help="Please give an int value when to start swa moving averaging")
-    parser.add_argument('--sgld_save_every', default=2, help="Please give an int value when to start swa moving averaging")
-    parser.add_argument('--sgld_save_start', default=100, help="Please give an int value when to start swa moving averaging")
-    parser.add_argument('--sgld_max_samples', default=100, help="Please give an int value when to start swa moving averaging")
+    parser.add_argument('--sgld', default=False, help="Please give a bool whether to use SGLD or not")
+    parser.add_argument('--psgld', default=False, help="Please give a bool whether to use pSGLD or not")
+    parser.add_argument('--sgld_noise_std', default=0.001, help="Please give an float value defining noise standard deviation")
+    parser.add_argument('--sgld_save_every', default=2, help="Please give an int value defining how often models is sampled")
+    parser.add_argument('--sgld_save_start', default=100, help="Please give an int value defining when to start sampling model")
+    parser.add_argument('--sgld_max_samples', default=100, help="Please give an int value defining max number of sampled model")
 
     #   additional arguments for BBP training
 
-    parser.add_argument('--bbp', default=False, help="Please give a bool whether to use SWA or not")
-    parser.add_argument('--bbp_complexity', default=0.1, help="Please give a float value defining complexity weight applied on KL loss")
-    parser.add_argument('--bbp_sample_nbr', default=5, help="Please give an int value defining how much instances to be sampled for training")
-    parser.add_argument('--bbp_eval_Nsample', default=100, help="Please give an int value defining how much instances to be sampled for evaluation")
+    parser.add_argument('--bbp', default=False, help="Please give a bool whether to use Bayes By Backprop or not")
+    parser.add_argument('--bbp_prior_sigma_1', default=0.1, help="Please give a float defining sigma length for prior1")
+    parser.add_argument('--bbp_prior_sigma_2', default=0.001, help="Please give a float defining sigma length for prior2")
+    parser.add_argument('--bbp_prior_pi', default=1., help="Please give a float defining ratio between prior1 and prior2")
+    parser.add_argument('--bbp_complexity', default=0.01, help="Please give a float value defining complexity weight applied on KL loss")
+    parser.add_argument('--bbp_sample_nbr', default=5, help="Please give an int value defining how many instances to be sampled for training")
+    parser.add_argument('--bbp_eval_Nsample', default=100, help="Please give an int value defining how many instances to be sampled for evaluation")
 
 
     args = parser.parse_args()
@@ -250,11 +248,7 @@ def get_configs(args):
     else:
         params['step_gamma'] = 0.1
 
-    #   bool for whether task is pretraining or not
-    if args.pretrain is not None:
-        params['pretrain'] = True
-    else:
-        params['pretrain'] = False
+    params['pretrain'] = False
 
     params['optimizer'] = str(args.optimizer)
     params['grad_clip'] = float(args.grad_clip)
@@ -384,6 +378,12 @@ def get_configs(args):
             net_params['residual'] = True
         else:
             net_params['residual'] = False
+
+    #   Additional arguments for nets using Bayes by Backprop
+    if params['bbp'] == True:
+        net_params['bbp_prior_sigma_1'] = float(args.bbp_prior_sigma_1)
+        net_params['bbp_prior_sigma_2'] = float(args.bbp_prior_sigma_2)
+        net_params['bbp_prior_pi'] = float(args.bbp_prior_pi)
 
     return args, config, params, net_params
 

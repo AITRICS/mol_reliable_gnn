@@ -12,7 +12,8 @@ class SGLD(Optimizer):
     def __init__(self, params, lr=required, norm_sigma=0, addnoise=True, noise_std=0.001):
 
         if norm_sigma != 0.:
-            weight_decay = 1 / (norm_sigma ** 2)
+            # weight_decay = 1 / (norm_sigma ** 2)
+            weight_decay = norm_sigma
         else:
             weight_decay = 0.
 

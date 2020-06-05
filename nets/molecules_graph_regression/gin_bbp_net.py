@@ -40,25 +40,35 @@ class GINNet(nn.Module):
         else:
             self.num_classes = 1
 
+        # Prior Length
+        self.prior_sigma_1 = net_params['bbp_prior_sigma_1']
+        self.prior_sigma_2 = net_params['bbp_prior_sigma_2']
+        self.prior_pi = net_params['bbp_prior_pi']
+
         # List of MLPs
         self.ginlayers = torch.nn.ModuleList()
         
-        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False)
+        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
         
         for layer in range(self.n_layers):
-            mlp = MLP(hidden_dim, hidden_dim, hidden_dim, self.batch_norm, self.layer_norm)
+            mlp = MLP(hidden_dim, hidden_dim, hidden_dim, self.batch_norm, self.layer_norm, \
+                    self.prior_sigma_1, self.prior_sigma_2, self.prior_pi)
             self.ginlayers.append(GINLayer(ApplyNodeFunc(mlp), neighbor_aggr_type,
                                            dropout, self.graph_norm, self.batch_norm, self.layer_norm, 0, learn_eps))
 
         # Linear function for graph poolings (readout) of output of each layer
         # which maps the output of different layers into a prediction score
 
-        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False)
-        self.linear_prediction = BayesianLinear(out_dim, self.num_classes, bias=True)
+        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
+        self.linear_prediction = BayesianLinear(out_dim, self.num_classes, bias=True, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
         
 		#	additional parameters for gated residual connection
         if self.residual == 'gated':
-            self.W_g = BayesianLinear(2*hidden_dim, hidden_dim, bias=False)
+            self.W_g = BayesianLinear(2*hidden_dim, hidden_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
 
     def forward(self, g, h, e, snorm_n, snorm_e):
         

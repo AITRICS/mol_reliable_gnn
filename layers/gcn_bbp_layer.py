@@ -25,9 +25,16 @@ def reduce_sum(nodes):
 
 class NodeApplyModule(nn.Module):
     # Update node feature h_v with (Wh_v+b)
-    def __init__(self, in_dim, out_dim):
+    def __init__(self, in_dim, out_dim, \
+            prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
         super().__init__()
-        self.linear = BayesianLinear(in_dim, out_dim, bias=False)
+
+        self.prior_sigma_1 = prior_sigma_1
+        self.prior_sigma_2 = prior_sigma_2
+        self.prior_pi = prior_pi
+
+        self.linear = BayesianLinear(in_dim, out_dim, bias=False, \
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi)
         
     def forward(self, node):
         h = self.linear(node.data['h'])
@@ -37,7 +44,9 @@ class GCNLayer(nn.Module):
     """
         Param: [in_dim, out_dim]
     """
-    def __init__(self, in_dim, out_dim, activation, dropout, graph_norm, batch_norm, layer_norm, agg, residual=False):
+    def __init__(self, in_dim, out_dim, activation, dropout, graph_norm, batch_norm, layer_norm, agg, residual=False, \
+            prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
+
         super().__init__()
         self.in_channels = in_dim
         self.out_channels = out_dim
@@ -46,11 +55,20 @@ class GCNLayer(nn.Module):
         self.layer_norm = layer_norm
         self.residual = residual
         self.agg = agg
+
+        self.prior_sigma_1 = prior_sigma_1
+        self.prior_sigma_2 = prior_sigma_2
+        self.prior_pi = prior_pi
         
         if in_dim != out_dim:
             self.residual = False
         
-        self.apply_mod = NodeApplyModule(in_dim, out_dim)
+        self.apply_mod = NodeApplyModule(in_dim, out_dim, \
+                prior_sigma_1=self.prior_sigma_1, 
+                prior_sigma_2=self.prior_sigma_2, 
+                prior_pi=self.prior_pi
+                )
+
         if batch_norm:
             self.batchnorm_h = nn.BatchNorm1d(out_dim)
         if layer_norm:

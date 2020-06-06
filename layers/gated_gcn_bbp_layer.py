@@ -13,7 +13,8 @@ class GatedGCNLayer(nn.Module):
     """
         Param: []
     """
-    def __init__(self, input_dim, output_dim, dropout, graph_norm, batch_norm, layer_norm, gated_gcn_agg):#, residual=False):
+    def __init__(self, input_dim, output_dim, dropout, graph_norm, batch_norm, layer_norm, gated_gcn_agg,
+                prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):#, residual=False):
         super().__init__()
         self.in_channels = input_dim
         self.out_channels = output_dim
@@ -22,12 +23,31 @@ class GatedGCNLayer(nn.Module):
         self.batch_norm = batch_norm
         self.layer_norm = layer_norm
         self.gated_gcn_agg = gated_gcn_agg
+
+        self.prior_sigma_1 = prior_sigma_1
+        self.prior_sigma_2 = prior_sigma_2
+        self.prior_pi = prior_pi
         
-        self.A = BayesianLinear(input_dim, output_dim, bias=False)
-        self.B = BayesianLinear(input_dim, output_dim, bias=False)
-        self.C = BayesianLinear(input_dim, output_dim, bias=False)
-        self.D = BayesianLinear(input_dim, output_dim, bias=False)
-        self.E = BayesianLinear(input_dim, output_dim, bias=False)
+        self.A = BayesianLinear(input_dim, output_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.B = BayesianLinear(input_dim, output_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.C = BayesianLinear(input_dim, output_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.D = BayesianLinear(input_dim, output_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.E = BayesianLinear(input_dim, output_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
 
         if batch_norm:
             self.bn_node_h = nn.BatchNorm1d(output_dim)

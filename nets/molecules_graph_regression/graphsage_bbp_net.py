@@ -43,18 +43,37 @@ class GraphSageNet(nn.Module):
         else:
             self.num_classes = 1
 
-        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False)
+        self.prior_sigma_1 = net_params['bbp_prior_sigma_1']
+        self.prior_sigma_2 = net_params['bbp_prior_sigma_2']
+        self.prior_pi = net_params['bbp_prior_pi']
+
+
+        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
         
         self.in_feat_dropout = nn.Dropout(in_feat_dropout)
         
         self.layers = nn.ModuleList([GraphSageLayer(hidden_dim, hidden_dim, F.relu,
-                                              dropout, aggregator_type,  self.batch_norm, self.graph_norm, self.layer_norm, self.concat_norm) for _ in range(n_layers)])
-        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False)
-        self.linear_predict = BayesianLinear(out_dim, self.num_classes, bias=True)
+                dropout, aggregator_type,  self.batch_norm, self.graph_norm, self.layer_norm, self.concat_norm,
+                prior_sigma_1=self.prior_sigma_1, prior_sigma_2=self.prior_sigma_2, prior_pi=self.prior_pi
+                ) for _ in range(n_layers)])
+        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.linear_predict = BayesianLinear(out_dim, self.num_classes, bias=True,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
 
 		#	additional parameters for gated residual connection
         if self.residual == "gated":
-            self.W_g  = BayesianLinear(2*hidden_dim, hidden_dim, False)
+            self.W_g  = BayesianLinear(2*hidden_dim, hidden_dim, False,
+                    prior_sigma_1=self.prior_sigma_1,
+                    prior_sigma_2=self.prior_sigma_2,
+                    prior_pi=self.prior_pi)
         
     def forward(self, g, h, e, snorm_n, snorm_e):
         h = h.float()

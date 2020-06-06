@@ -11,7 +11,8 @@ from layers.linear_bayesian_layer import BayesianLinear
 """
 
 class GATHeadLayer(nn.Module):
-    def __init__(self, in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, att_reduce_fn="softmax"):
+    def __init__(self, in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, att_reduce_fn="softmax",
+            prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
         super().__init__()
         out_dim = out_dim // num_heads
         self.dropout = dropout
@@ -19,8 +20,14 @@ class GATHeadLayer(nn.Module):
         self.batch_norm = batch_norm
         self.layer_norm = layer_norm
         
-        self.fc = BayesianLinear(in_dim, out_dim, bias=False)
-        self.attn_fc = BayesianLinear(2 * out_dim, 1, bias=False)
+        self.fc = BayesianLinear(in_dim, out_dim, bias=False,
+                prior_sigma_1=prior_sigma_1,
+                prior_sigma_2=prior_sigma_2,
+                prior_pi=prior_pi)
+        self.attn_fc = BayesianLinear(2 * out_dim, 1, bias=False,
+                prior_sigma_1=prior_sigma_1,
+                prior_sigma_2=prior_sigma_2,
+                prior_pi=prior_pi)
         if batch_norm:
             self.batchnorm_h = nn.BatchNorm1d(out_dim)
         if layer_norm:
@@ -70,7 +77,8 @@ class GATLayer(nn.Module):
     """
         Param: [in_dim, out_dim, n_heads]
     """
-    def __init__(self, in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, residual=False, att_reduce_fn="softmax"):
+    def __init__(self, in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, residual=False, att_reduce_fn="softmax",
+            prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
         super().__init__()
         self.in_channels = in_dim 
         self.out_channels = out_dim
@@ -80,8 +88,10 @@ class GATLayer(nn.Module):
         
         self.heads = nn.ModuleList()
         for i in range(num_heads):
-            self.heads.append(GATHeadLayer(in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, att_reduce_fn))
-        self.linear_concat = BayesianLinear(out_dim, out_dim, bias=False)
+            self.heads.append(GATHeadLayer(in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, att_reduce_fn,
+                    prior_sigma_1=prior_sigma_1, prior_sigma_2=prior_sigma_2, prior_pi=prior_pi))
+        self.linear_concat = BayesianLinear(out_dim, out_dim, bias=False,
+                    prior_sigma_1=prior_sigma_1, prior_sigma_2=prior_sigma_2, prior_pi=prior_pi)
         self.merge = 'cat' 
 
     def forward(self, g, h, snorm_n):

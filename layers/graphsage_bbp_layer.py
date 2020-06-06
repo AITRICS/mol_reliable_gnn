@@ -9,23 +9,31 @@ import dgl.function as fn
     https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf
 """
 
-from layers.sage_aggregator_layer import SumAggregator, MaxPoolAggregator, MeanAggregator, LSTMAggregator
-from layers.node_apply_layer import NodeApply
+from layers.sage_aggregator_bbp_layer import SumAggregator, MaxPoolAggregator, MeanAggregator, LSTMAggregator
+from layers.node_apply_bbp_layer import NodeApply
 
 from layers.linear_bayesian_layer import BayesianLinear
 
 class GraphSageLayer(nn.Module):
 
     def __init__(self, in_feats, out_feats, activation, dropout,
-                 aggregator_type, graph_norm, batch_norm, layer_norm, concat_norm, bias=False):
+                 aggregator_type, graph_norm, batch_norm, layer_norm, concat_norm, bias=False,
+                 prior_sigma_1=0.1, prior_sigma_2=0.001, prior_pi=1.):
         super().__init__()
         self.in_channels = in_feats
         self.out_channels = out_feats
         self.aggregator_type = aggregator_type
 
         self.concat_norm = concat_norm
+
+        self.prior_sigma_1 = prior_sigma_1
+        self.prior_sigma_2 = prior_sigma_2
+        self.prior_pi = prior_pi
         
-        self.nodeapply = NodeApply(in_feats, out_feats, activation, dropout, concat_norm, bias=False)
+        self.nodeapply = NodeApply(in_feats, out_feats, activation, dropout, concat_norm, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
         self.dropout = nn.Dropout(p=dropout)
 
         if aggregator_type == "maxpool":

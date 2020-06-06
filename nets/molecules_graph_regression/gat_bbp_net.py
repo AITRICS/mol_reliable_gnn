@@ -37,22 +37,42 @@ class GATNet(nn.Module):
         self.task = net_params['task']
         if self.task == 'classification':
             self.num_classes = net_params['num_classes']
+
+        self.prior_sigma_1 = net_params['bbp_prior_sigma_1']
+        self.prior_sigma_2 = net_params['bbp_prior_sigma_2']
+        self.prior_pi = net_params['bbp_prior_pi']
         
         self.dropout = dropout
         
-        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False)
+        self.embedding_lin = BayesianLinear(num_atom_type, hidden_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
         self.in_feat_dropout = nn.Dropout(in_feat_dropout)
         
         self.layers = nn.ModuleList([
             GATLayer(hidden_dim, hidden_dim, num_heads, dropout, 
-                     self.graph_norm, self.batch_norm, self.layer_norm, self.att_reduce_fn) for _ in range(n_layers)])
+                     self.graph_norm, self.batch_norm, self.layer_norm, self.att_reduce_fn,
+                     prior_sigma_1=self.prior_sigma_1, 
+                     prior_sigma_2=self.prior_sigma_2, 
+                     prior_pi=self.prior_pi
+                     ) for _ in range(n_layers)])
 
-        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False)        
-        self.linear_predict = BayesianLinear(out_dim, 1, bias=True)
+        self.linear_ro = BayesianLinear(hidden_dim, out_dim, bias=False,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
+        self.linear_predict = BayesianLinear(out_dim, 1, bias=True,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi)
 
 		#	additional parameters for gated gcn
         if self.residual == "gated":
-            self.W_g  = nn.Linear(2*hidden_dim, hidden_dim, False)
+            self.W_g  = nn.Linear(2*hidden_dim, hidden_dim, False,
+                    prior_sigma_1=self.prior_sigma_1,
+                    prior_sigma_2=self.prior_sigma_2,
+                    prior_pi=self.prior_pi)
         
     def forward(self, g, h, e, snorm_n, snorm_e):
 

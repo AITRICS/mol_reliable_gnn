@@ -11,7 +11,9 @@ import torch.nn.functional as F
 class GATHeadLayer(nn.Module):
     def __init__(self, in_dim, out_dim, num_heads, dropout, graph_norm, batch_norm, layer_norm, att_reduce_fn="softmax"):
         super().__init__()
+
         out_dim = out_dim // num_heads
+
         self.dropout = dropout
         self.graph_norm = graph_norm
         self.batch_norm = batch_norm

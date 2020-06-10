@@ -103,37 +103,3 @@ def evaluate_network_classification(model, device, data_loader, epoch, params):
 
     return epoch_test_loss, epoch_test_perfs, total_scores, total_targets, total_smiles
 
-'''
-
-def evaluate_network_classification_mcdropout(model, device, data_loader, epoch, params):
-    model.train()
-    epoch_test_loss = 0
-    nb_data = 0
-
-    total_scores = []
-    total_targets = []
-    total_smiles = []
-    with torch.no_grad():
-        for iter, (batch_graphs, batch_targets, batch_snorm_n, batch_snorm_e, batch_smiles) in enumerate(data_loader):
-            batch_x = batch_graphs.ndata['feat'].to(device)
-            batch_e = batch_graphs.edata['feat'].to(device)
-            batch_snorm_e = batch_snorm_e.to(device)
-            batch_targets = batch_targets.to(device)
-            batch_snorm_n = batch_snorm_n.to(device)
-            
-            batch_scores = model.forward(batch_graphs, batch_x, batch_e, batch_snorm_n, batch_snorm_e)
-            batch_targets = batch_targets.float()
-            loss = model.loss(batch_scores, batch_targets)
-            epoch_test_loss += loss.detach().item()
-            nb_data += batch_targets.size(0)
-            total_scores.append(batch_scores)
-            total_targets.append(batch_targets)
-            total_smiles.extend(batch_smiles)
-
-        epoch_test_loss /= (iter + 1)
-        total_scores = torch.cat(total_scores, dim = 0)
-        total_targets = torch.cat(total_targets, dim = 0)
-        epoch_test_perfs = binary_class_perfs(total_scores, total_targets)
-
-    return epoch_test_loss, epoch_test_perfs, total_scores, total_targets, total_smiles
-'''

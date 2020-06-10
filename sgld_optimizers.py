@@ -5,6 +5,8 @@ import copy
 
 class SGLD(Optimizer):
     """
+    ref: https://github.com/JavierAntoran/Bayesian-Neural-Networks
+
     SGLD optimiser based on pytorch's SGD.
     Note that the weight decay is specified in terms of the gaussian prior sigma.
     """

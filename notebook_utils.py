@@ -89,6 +89,9 @@ class Args():
 
         #   additional arguments for BBP training
         self.bbp = False
+        self.bbb_prior_sigma_1 = 0.1
+        self.bbb_prior_sigma_2 = 0.001
+        self.bbb_prior_pi = 1.0
         self.bbp_complexity = 0.1
         self.bbp_sample_nbr = 5
         self.bbp_eval_Nsample = 100

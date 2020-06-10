@@ -143,7 +143,8 @@ for tox_type in TOX21_CLASSES:
             f.close()
 
     #with open(PATH+filename[:-4]+'.csv', 'w') as f:
-fr = open(PATH+filenamex[:-4]+'.csv', 'w')
+#fr = open(PATH+filenamex[:-4]+'.csv', 'w')
+fr = open(PATH[:-1] + '.csv', 'w')
 fr.write(model + '\n')
 fr.write(params + '\n')
 fr.write(net_params + '\n')

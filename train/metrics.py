@@ -81,9 +81,6 @@ def binary_class_perfs(scores, targets):
 
     def np_sigmoid(x):
         return 1./(1. + np.exp(-x))
-    # if targets.dtype == "float32":
-    #     targets = targets.astype("int32")
-
 
     perfs = {}
     perfs['accuracy'] = accuracy_score(targets, preds)
@@ -102,77 +99,3 @@ def binary_class_perfs(scores, targets):
     return perfs
 
 
-
-'''
-def accuracy_TU(scores, targets):
-    scores = scores.detach().argmax(dim=1)
-    acc = (scores==targets).float().sum().item()
-    return acc
-
-
-def accuracy_MNIST_CIFAR(scores, targets):
-    scores = scores.detach().argmax(dim=1)
-    acc = (scores==targets).float().sum().item()
-    return acc
-
-
-def accuracy_SBM(scores, targets):
-    S = targets.cpu().numpy()
-    C = np.argmax( torch.nn.Softmax(dim=0)(scores).cpu().detach().numpy() , axis=1 )
-    CM = confusion_matrix(S,C).astype(np.float32)
-    nb_classes = CM.shape[0]
-    targets = targets.cpu().detach().numpy()
-    nb_non_empty_classes = 0
-    pr_classes = np.zeros(nb_classes)
-    for r in range(nb_classes):
-        cluster = np.where(targets==r)[0]
-        if cluster.shape[0] != 0:
-            pr_classes[r] = CM[r,r]/ float(cluster.shape[0])
-            if CM[r,r]>0:
-                nb_non_empty_classes += 1
-        else:
-            pr_classes[r] = 0.0
-    acc = 100.* np.sum(pr_classes)/ float(nb_non_empty_classes)
-    return acc
-
-
-def binary_f1_score(scores, targets):
-    """Computes the F1 score using scikit-learn for binary class labels. 
-    
-    Returns the F1 score for the positive class, i.e. labelled '1'.
-    """
-    y_true = targets.cpu().numpy()
-    y_pred = scores.argmax(dim=1).cpu().numpy()
-    return f1_score(y_true, y_pred, average='binary')
-
-  
-def accuracy_VOC(scores, targets):
-    scores = scores.detach().argmax(dim=1).cpu()
-    targets = targets.cpu().detach().numpy()
-    acc = f1_score(scores, targets, average='weighted')
-    return acc
-
-def class_perfs(scores, targets):
-    scores = scores.cpu().numpy()
-    preds = np.argmax(scores, axis = -1)
-    targets = targets.cpu().detach().numpy()
-
-    perfs = {}
-    perfs['accuracy'] = accuracy_score(targets, preds)
-    perfs['precision'] = precision_score(targets, preds)
-    perfs['recall'] = recall_score(targets, preds)
-    perfs['f1'] = f1_score(targets, preds)
-    perfs['auroc'] = roc_auc_score(targets, scores[:, 1]) 
-    perfs['auprc'] = average_precision_score(targets, scores[:, 1]) 
-    
-    return perfs
-
-def accuracy_Mol(scores, targets):
-    scores = scores.detach().cpu().numpy()
-    fn = lambda x: 1 if x>0 else 0
-    preds = np.array([fn(x) for x in scores])
-    targets = targets.detach().cpu().numpy()
-    #acc = np.sum((preds==targets))
-    acc = accuracy_score(targets, preds)
-    return acc
-'''

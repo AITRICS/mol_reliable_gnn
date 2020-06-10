@@ -54,7 +54,7 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
         swag_model = SWAG(
                 gnn_model(MODEL_NAME, net_params),
                 no_cov_mat=False,
-                max_num_models=30
+                max_num_models=20
                 )
 
         swag_model = swag_model.to(device)
@@ -134,7 +134,7 @@ def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config,
             epoch,
             params,
             state_dict=model.state_dict(),
-            swa_state_dict=swag_model.state_dict(),
+            swag_state_dict=swag_model.state_dict(),
             swa_n=swa_n,
             optimizer=optimizer.state_dict()
         )

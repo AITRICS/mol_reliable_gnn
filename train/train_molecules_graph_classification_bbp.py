@@ -16,14 +16,10 @@ def train_epoch_classification(model, optimizer, device, data_loader, epoch, par
     model.train()
     epoch_loss = 0
     nb_data = 0
-    #gpu_mem = 0
     num_iters = len(data_loader.dataset)
 
     total_scores = []
     total_targets = []
-
-    # NTrainPoints = len(data_loader.dataset)
-    # Nbatches = NTrainPoints / 128
 
     for iter, (batch_graphs, batch_targets, batch_snorm_n, batch_snorm_e, batch_smiles) in enumerate(data_loader):
         #   SWA cyclic lr schedule

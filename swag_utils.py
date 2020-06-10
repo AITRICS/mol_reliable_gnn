@@ -1,3 +1,9 @@
+"""
+    ref: https://github.com/wjmaddox/swa_gaussian
+
+    implementation of SWAG
+"""
+
 import itertools
 import torch
 import os

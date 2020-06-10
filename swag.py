@@ -1,4 +1,6 @@
 """
+    ref: https://github.com/wjmaddox/swa_gaussian
+
     implementation of SWAG
 """
 

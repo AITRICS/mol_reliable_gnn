@@ -7,6 +7,8 @@ from blitz.modules.weight_sampler import GaussianVariational, ScaleMixturePrior
 
 class BayesianLinear(BayesianModule):
     """
+    ref: https://github.com/piEsposito/blitz-bayesian-deep-learning
+
     Bayesian Linear layer, implements the linear layer proposed on Weight Uncertainity on Neural Networks
     (Bayes by Backprop paper).
 

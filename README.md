@@ -81,7 +81,7 @@ python main_classification.py --gpu_id 0 --config configs/gin_bace.json --save_p
 ```
 The training and network parameters for each dataset and network is stored in a json file in the [`configs/`](../configs) directory.
 
-### 1.1 In terminal
+### 1.2 In jupyter notebook
 
 ```
 # Run the notebook file (at the root of the project)
@@ -89,7 +89,7 @@ conda activate reliable_gnn
 jupyter notebook
 ```
 Please use main_tox21.ipynb to run models on TOX21.
-Else, use main_classification_ipynb.
+Else, use main_classification.ipynb.
 
 ## 2. Output, checkpoints
 

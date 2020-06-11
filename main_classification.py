@@ -32,7 +32,7 @@ def set_seed(seed):
 
 from nets.molecules_graph_regression.load_net import gnn_model # import all GNNS
 from data.data import load_data # import dataset
-from utils import get_configs, get_arguments, add_dir_name # import arguments and configurations
+from utils.utils import get_configs, get_arguments, add_dir_name # import arguments and configurations
 
 """
     VIEWING MODEL CONFIG AND PARAMS

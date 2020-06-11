@@ -9,7 +9,7 @@ import math
 from train.metrics import binary_class_perfs 
 
 #   import adjust lr for SWA cyclic lr
-import swa_utils
+from utils import swa_utils
 
 def train_epoch_classification(model, optimizer, device, data_loader, epoch, params, cyclic_lr_schedule=None):
     model.train()

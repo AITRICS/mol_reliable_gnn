@@ -81,6 +81,16 @@ python main_classification.py --gpu_id 0 --config configs/gin_bace.json --save_p
 ```
 The training and network parameters for each dataset and network is stored in a json file in the [`configs/`](../configs) directory.
 
+### 1.1 In terminal
+
+```
+# Run the notebook file (at the root of the project)
+conda activate reliable_gnn 
+jupyter notebook
+```
+Please use main_tox21.ipynb to run models on TOX21.
+Else, use main_classification_ipynb.
+
 ## 2. Output, checkpoints
 
 Output results are located in the folder defined by the variable `out_dir` in the corresponding config file (eg. [`configs/molecules_graph_regression_GatedGCN_ZINC.json`](../configs/gin_bace.json) file).  

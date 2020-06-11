@@ -15,7 +15,7 @@ import gpytorch
 from gpytorch.lazy import RootLazyTensor, DiagLazyTensor, AddedDiagLazyTensor
 from gpytorch.distributions import MultivariateNormal
 
-from swag_utils import flatten, unflatten_like
+from utils.swag_utils import flatten, unflatten_like
 
 def swag_parameters(module, params, no_cov_mat=True):
     for name in list(module._parameters.keys()):

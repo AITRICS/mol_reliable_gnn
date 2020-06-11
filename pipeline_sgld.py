@@ -17,7 +17,7 @@ from nets.molecules_graph_regression.load_net import gnn_model # import all GNNS
 from train.train_molecules_graph_classification_sgld import train_epoch_classification, evaluate_network_classification # import train functions
 from train.metrics import binary_class_perfs
 
-from sgld_optimizers import SGLD, pSGLD
+from utils.sgld_optimizers import SGLD, pSGLD
 
 def train_val_pipeline_classification(MODEL_NAME, DATASET_NAME, dataset, config, params, net_params, dirs):
     t0 = time.time()

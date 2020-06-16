@@ -1,6 +1,7 @@
 # Reliable GNNs for molecular machine learning
 
-Source codes for "A baseline for reliable molecular prediction models via Bayesian learning"
+Source codes for "A benchmark study on reliable molecular supervised learning via Bayesian learning"
+https://arxiv.org/abs/2006.07021
 
 
 ## Setup Python environment

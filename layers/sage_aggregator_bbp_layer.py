@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from layers.linear_bayesian_layer import BayesianLinear
 
 class Aggregator(nn.Module):
     """
@@ -58,7 +59,7 @@ class MaxPoolAggregator(Aggregator):
 
     def __init__(self, in_feats, out_feats, activation, bias):
         super().__init__()
-        self.linear = nn.Linear(in_feats, out_feats, bias=bias)
+        self.linear = BayesianLinear(in_feats, out_feats, bias=bias)
         self.activation = activation
 
     def aggre(self, neighbour):

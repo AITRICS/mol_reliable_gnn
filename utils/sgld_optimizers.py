@@ -30,6 +30,9 @@ class SGLD(Optimizer):
 
         self.noise_std = noise_std
 
+        # place to stack state dicts
+        self.weight_set_samples = []
+
     def step(self):
         """
         Performs a single optimization step.
@@ -58,6 +61,14 @@ class SGLD(Optimizer):
 
         return loss
 
+    def save_sampled_net(self, model, max_samples=100):
+        
+        if len(self.weight_set_samples) >= max_samples:
+            self.weight_set_samples.pop(0)
+
+        self.weight_set_samples.append(copy.deepcopy(model.state_dict()))
+
+        return None
 
 class pSGLD(Optimizer):
     """

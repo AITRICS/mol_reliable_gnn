@@ -1,7 +1,7 @@
-# Reliable GNNs for molecular machine learning
+# Molecular Supervised Learning with GNNs and Bayesian Learning
 
-Source codes for "A benchmark study on reliable molecular supervised learning via Bayesian learning"
-https://arxiv.org/abs/2006.07021
+Source codes for ["A benchmark study on reliable molecular supervised learning via Bayesian learning"](https://arxiv.org/abs/2006.07021) and ["Comprehensive study on molecular supervised learning with graph neural networks"](https://pubs.acs.org/doi/10.1021/acs.jcim.0c00416)
+
 
 
 ## Setup Python environment
